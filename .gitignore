@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+# Added by Odmaa 20181122
+weibo.nt
