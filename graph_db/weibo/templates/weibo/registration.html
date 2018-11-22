@@ -1,0 +1,54 @@
+{% load static %}
+<link href="{% static "assets/css/bootstrap.css" %}" rel="stylesheet" id="bootstrap-css">
+<link href="{% static "assets/css/bootstrap-login.css" %}" rel="stylesheet" id="bootstrap-login">
+<script src="{% static "assets/css/bootstrap.css" %}"></script>
+<script src="{% static "assets/js/jquery.js" %}"></script>
+<!------ Include the above in your HEAD tag ---------->
+
+<section class="login-block">
+  <div class="container">
+     <div class="row">
+        <div class="col-md-4 login-sec col-md-offset-4">
+          <h2 class="text-center">Register to Weibo</h2>
+          <form class="login-form" action="" method="post">
+          {% csrf_token %}
+            <div class="form-group">
+              <label class="text-uppercase">Username</label>
+              <input type="text" class="form-control" placeholder="" name="screen_name" required>
+            </div>
+            <div class="form-group">
+              <label class="text-uppercase">Password</label>
+              <input type="password" class="form-control" placeholder="" name="password" required>
+            </div>
+            <div class="form-group">
+              <label class="text-uppercase">Name</label>
+              <input type="text" class="form-control" placeholder="" name="name" required>
+            </div>
+            <div class="form-group">
+              <label class="text-uppercase">Gender</label></br>
+              <select type="text" name="gender">
+                  <option selected>Male</option>
+                  <option>Female</option>
+              </select>
+            </div>                      
+            <div class="form-group">
+              <label class="text-uppercase">Province</label>
+              <input type="text" class="form-control" placeholder="" name="province">
+            </div>
+            <div class="form-group">
+              <label class="text-uppercase">City</label>
+              <input type="text" class="form-control" placeholder="" name="city">
+            </div>
+            <div class="form-group">
+              <label class="text-uppercase">Url</label>
+              <input type="text" class="form-control" placeholder="" name="url">
+            </div>
+
+            <button type="submit" class="btn btn-login col-md-4 col-md-offset-4">Register</button>
+          </div>
+        </form>
+       </div>   
+     </div>
+    </div>
+  </div>
+</section>
