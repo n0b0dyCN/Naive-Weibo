@@ -89,7 +89,7 @@ def unfriend(response):
     
 
 # 创建帖子
-def create_post(response):
+def create_post(request):
 
     if request.method == 'POST':
 
@@ -97,6 +97,9 @@ def create_post(response):
         form = dict()
         form.update(request.POST)
         form = {k:v[0] for k, v in form.items()}
+        
+        uid = request.COOKIES.get("uid")
+        mid = -1
 
         # 为新的用户生成10位的uid用户编码
         while True:
@@ -109,28 +112,33 @@ def create_post(response):
             if not query_graph(sparql):
                 break
 
-            form['uid'] = uid
-            form['mid'] = mid
-            form['datetime'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            sparql = """INSERT DATA {{
-                            <{uid}> <foaf:posted> <{mid}> . 
-                            <{mid}> <rdf:type> <wb:Post> .
-                            <{mid}> <wb:date> \"{datetime}\" .
-                            <{mid}> <wb:text> \"{text}\" .
-                            <{mid}> <wb:source> \"{source}\" .
-                            <{mid}> <wb:repostsnum> \"{repostsnum}\" .
-                            <{mid}> <wb:commentsnum> \"{commentsnum}\" .
-                            <{mid}> <wb:attitudesnum> \"{attitudesnum}\" .
-                            <{mid}> <wb:topic> \"{topic}\" .
-                        }}""".format(**form)
+        form['uid'] = uid
+        form['mid'] = mid
+        form['datetime'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if "source" not in form:
+            form["source"] = mid
+            form["repostsnum"] = 0
+            form["commentsnum"] = 0
+            form["attitudesnum"] = 0
+        sparql = """INSERT DATA {{
+                        <{uid}> <foaf:posted> <{mid}> . 
+                        <{mid}> <rdf:type> <wb:Post> .
+                        <{mid}> <wb:date> \"{datetime}\" .
+                        <{mid}> <wb:text> \"{text}\" .
+                        <{mid}> <wb:source> \"{source}\" .
+                        <{mid}> <wb:repostsnum> \"{repostsnum}\" .
+                        <{mid}> <wb:commentsnum> \"{commentsnum}\" .
+                        <{mid}> <wb:attitudesnum> \"{attitudesnum}\" .
+                        <{mid}> <wb:topic> \"{topic}\" .
+                    }}""".format(**form)
 
-            save = query_graph(sparql)
+        save = query_graph(sparql)
 
-            # 如果用户信息成功存到数据库，则跳转到用户页面，将uid和screen_name存到cookie中
-            if save['StatusCode']=='402':
-                pass
+        # 如果用户信息成功存到数据库，则跳转到用户页面，将uid和screen_name存到cookie中
+        if save['StatusCode']=='402':
+            return HttpResponseRedirect('/weibo/user?uid={uid}'.format(uid=form['uid']))
 
-    response = HttpResponseRedirect('/weibo/user?uid={uid}'.format(uid=form['uid']))
+    return HttpResponseRedirect('/weibo/user?uid={uid}'.format(uid=form['uid']))
 
 
 # 删除帖子
@@ -203,6 +211,7 @@ def newsfeed(request):
                         }}
                     }}
                 }} LIMIT 10""".format(**post_dict)
+    print(sparql)
     posts = normalize_list(query_graph(sparql))
 
     return render(request, 'weibo/newsfeed.html', {'posts': posts})
@@ -222,7 +231,7 @@ def profile(request):
     # 获取用户个人信息，存到my_profile字典中
     user_dict = dict()
     user_dict['uid'] = uid
-    user_dict['properties'] = ['screen_name', 'name', 'province', 'city', 'location', 'url', 'gender', \
+    user_dict['properties'] = ['screen_name', 'name', 'province', 'city', 'url', 'gender', \
                                 'followersnum', 'friendsnum', 'statusesnum', 'favouritesnum', 'created_at']
     user_dict['conditions'] = ' . '.join([ '<{}> <foaf:{}> ?{}'.format(uid, p, p)  for p in user_dict['properties'] ]) + ' . '
     sparql = """SELECT *
@@ -230,7 +239,9 @@ def profile(request):
                       <{uid}> <rdf:type> <foaf:Person> .
                       OPTIONAL {{ {conditions} }}
                 }}""".format(**user_dict)
-    my_profile = normalize_list(query_graph(sparql))
+    print(sparql)
+    my_profile = normalize_list(query_graph(sparql))[0]
+    print(my_profile["name"])
 
     # 获取用户发布的帖子，存到my_posts字典中
     post_dict = dict()
@@ -261,7 +272,7 @@ def profile(request):
     friend_dict['uid'] = uid
     friend_dict['properties'] = ['screen_name', 'name', 'province', 'city', 'location', 'url', 'gender', \
                                 'followersnum', 'friendsnum', 'statusesnum', 'favouritesnum', 'created_at']
-    friend_dict['conditions'] = ' . '.join([ '?tuid <foaf:{}> ?{}'.format(p, p)  for p in friend_dict['properties'] ]) + ' . '
+    friend_dict['conditions'] = ' . '.join([ '?tuid <foaf:{}> ?{}\n'.format(p, p)  for p in friend_dict['properties'] ]) + ' . '
     sparql = """SELECT *
                 WHERE {{
                       <{uid}> <rdf:type> <foaf:Person> .
@@ -270,6 +281,10 @@ def profile(request):
                 }} LIMIT 6""".format(**friend_dict)
     my_friends = normalize_list(query_graph(sparql))
 
+    print("My profile")
+    print(my_profile)
+    print("My friends")
+    print(my_friends)
     return render(request, 'weibo/profile.html', {'my_profile': my_profile, 'my_posts': my_posts, 'my_friends': my_friends})
 
 # 注册
@@ -350,13 +365,14 @@ def login(request):
 
         # 从数据库里查询screen_name和password对应的uid
         exist = query_graph(sparql)
+        print(exist)
 
         # 如果存在screen_name和password对应的uid，则登录用户，将uid和screen_name存到cookie中
         if exist:
             uid = exist[0]['uid']['value']
+            print(uid)
             response = HttpResponseRedirect('/weibo/user?uid={uid}'.format(uid=uid))
             response.set_cookie('uid', uid)
-            response.set_cookie('uid', form['screen_name'])
 
             return response
 
@@ -391,6 +407,7 @@ def query_graph(sparql):
         result = gc.query(gStore_conf['username'], gStore_conf['password'], gStore_conf['db'], sparql)
         result = json.loads(result)
 
+    print(result)
     return result['results']['bindings'] if 'results' in result else result
 
 

@@ -58,11 +58,7 @@
 							  <li class="dropdown">
 								<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-user"></i></a>
 								<ul class="dropdown-menu">
-								  <li><a href="">More</a></li>
-								  <li><a href="">More</a></li>
-								  <li><a href="">More</a></li>
-								  <li><a href="">More</a></li>
-								  <li><a href="">More</a></li>
+								  <li><a href="/weibo/logout">Logout</a></li>
 								</ul>
 							  </li>
 							</ul>
@@ -82,8 +78,8 @@
 									  <div class="panel panel-default">
 										<div class="panel-thumbnail"><img src="{% static "assets/img/bg_5.jpg" %}" class="img-responsive"></div>
 										<div class="panel-body">
-										  <p class="lead">Urbanization</p>
-										  <p>45 Followers, 13 Posts</p>
+											<p class="lead">{{ my_profile.name }}</p>
+											<p>{{ my_profile.followersnum  }} Followers, {{ my_profile.statusesnum }} Posts</p>
 										  
 										  <p>
 											<img src="{% static "assets/img/uFp_tsTJboUY7kue5XAsGAs28.png" %}" height="28px" width="28px">
@@ -107,21 +103,18 @@
 								  <!-- main col right -->
 								  <div class="col-sm-7">
 									   
-
+									{% for post in my_posts %}
 									   <div class="panel panel-default">
-										 <div class="panel-heading"><a href="#" class="pull-right">View all</a> <h4>Bootply Editor &amp; Code Library</h4></div>
+										   <div class="panel-heading">{{ post.date  }} <b class="pull-right">@{{ my_profile.screen_name }}</b></div>
 										  <div class="panel-body">
-											<p><img src="{% static "assets/img/150x150.gif" %}" class="img-circle pull-right"> <a href="#">The Bootstrap Playground</a></p>
+											  <p><a href="#">{{ post.topic }}</a></p>
 											<div class="clearfix"></div>
 											<hr>
-											Design, build, test, and prototype 
-		using Bootstrap in real-time from your Web browser. Bootply combines the
-		 power of hand-coded HTML, CSS and JavaScript with the benefits of 
-		responsive design using Bootstrap. Find and showcase Bootstrap-ready 
-		snippets in the 100% free Bootply.com code repository.
+											{{ post.text  }}
 										  </div>
 									   </div>
 									 </div>
+									 {% endfor %}
 								  </div>
 							   </div><!--/row-->
 							  
@@ -144,17 +137,21 @@
 					Update Status
 			  </div>
 			  <div class="modal-body">
-				  <form class="form center-block">
+				  <form class="form center-block" id="post_form" action="/weibo/create_post" method="POST">
 					<div class="form-group">
-					  <textarea class="form-control input-lg" autofocus="" placeholder="What do you want to share?"></textarea>
+					  <textarea class="form-control input-lg" autofocus="" name="text" placeholder="What do you want to share?"></textarea>
 					</div>
+					<div class="form-group">
+						<input class="form-control input-lg mx-2" name="topic" placeholder="topic">
+					</div>
+					{% csrf_token %}
 				  </form>
 			  </div>
 			  <div class="modal-footer">
-				  <div>
-				  <button class="btn btn-primary btn-sm" data-dismiss="modal" aria-hidden="true">Post</button>
-					<ul class="pull-left list-inline"><li><a href=""><i class="glyphicon glyphicon-upload"></i></a></li><li><a href=""><i class="glyphicon glyphicon-camera"></i></a></li><li><a href=""><i class="glyphicon glyphicon-map-marker"></i></a></li></ul>
-				  </div>	
+				<div>
+    			  <button class="btn btn-primary btn-sm" onclick="event.preventDefault();document.getElementById('post_form').submit();" >Post</button>
+				  <button class="btn btn-primary btn-sm" data-dismiss="modal" aria-hidden="true">Close</button>
+				</div>	
 			  </div>
 		  </div>
 		  </div>
