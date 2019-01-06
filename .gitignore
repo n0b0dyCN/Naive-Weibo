@@ -106,3 +106,6 @@ venv.bak/
 
 # Added by Odmaa 20181122
 weibo.nt
+
+# Added by n0b0dy
+*.swp

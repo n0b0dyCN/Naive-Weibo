@@ -4,6 +4,7 @@ import json, datetime, random
 from django.shortcuts import render, redirect
 from weibo.models import UserInfo
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
 
 try:
     from . import GstoreConnector
@@ -142,7 +143,8 @@ def create_post(request):
 
 
 # 删除帖子
-def remove_post(response):
+@csrf_exempt
+def remove_post(request):
 
     if request.method == 'POST':
 
@@ -150,6 +152,8 @@ def remove_post(response):
         form = dict()
         form.update(request.POST)
         form = {k:v[0] for k, v in form.items()}
+        form["uid"] = request.COOKIES.get("uid")
+        print(form)
 
         sparql = """DELETE DATA {{
                         <{uid}> <foaf:posted> <{mid}> .
@@ -157,9 +161,9 @@ def remove_post(response):
                     }}""".format(**form)
         done = query_graph(sparql)
         if done:
-            return True
+            return HttpResponse("Successfully deleted.")
 
-    return False
+    return HttpResponse("Failed to delete.")
 
 
 # 发现页面

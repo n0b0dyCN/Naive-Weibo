@@ -59,6 +59,7 @@
 								<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-user"></i></a>
 								<ul class="dropdown-menu">
 								  <li><a href="/weibo/logout">Logout</a></li>
+								  <li><a href="">More</a></li>
 								</ul>
 							  </li>
 							</ul>
@@ -88,6 +89,7 @@
 									  </div>
 
 								   
+									  <!--
 									  <div class="panel panel-default">
 										<div class="panel-heading"><a href="#" class="pull-right">View all</a> <h4>Bootstrap Examples</h4></div>
 										  <div class="panel-body">
@@ -98,19 +100,31 @@
 											</div>
 										  </div>
 									  </div>								   
+									  -->
 								  </div>
 								  
 								  <!-- main col right -->
 								  <div class="col-sm-7">
 									   
 									{% for post in my_posts %}
-									   <div class="panel panel-default">
-										   <div class="panel-heading">{{ post.date  }} <b class="pull-right">@{{ my_profile.screen_name }}</b></div>
-										  <div class="panel-body">
-											  <p><a href="#">{{ post.topic }}</a></p>
-											<div class="clearfix"></div>
+									<div class="panel panel-default" id="{{ post.mid  }}">
+										   <div class="panel-heading"><b class="pull-left">@{{ my_profile.screen_name }}</b>&nbsp;&nbsp;{{ post.date  }} </div>
+										  <div class="panel-body container">
+											<div class="row">
+												<div class="col-sm-4">
+													<a href="#">#{{ post.topic }}#</a>
+												</div>
+												<div class="col-sm-1 dropdown">
+													<a data-toggle="dropdown" href="#">x</a>
+													<ul class="dropdown-menu" role="menu"  aria-labelledby="dLabel">
+														<li><a href="#" onclick="delete_post({{ post.mid }});">delete post</a></li>
+													</ul>
+												</div>
+											</div>
 											<hr>
+											<div>
 											{{ post.text  }}
+											</div>
 										  </div>
 									   </div>
 									 </div>
@@ -170,5 +184,19 @@
 				$('#btnShow').toggle();
 			});
         });
+
+function delete_post(mid) {
+	$.ajax({
+		type:"post",
+		url:"/weibo/remove_post",
+		data: { mid: mid },
+		dataType: "text",
+		success:function(data) {
+			alert(data);
+			location.reload();
+		}
+	});
+}
+
         </script>
 </body></html>

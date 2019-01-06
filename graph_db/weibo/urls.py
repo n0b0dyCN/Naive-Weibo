@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^register', views.register, name='register'),
     url(r'^newsfeed', views.newsfeed, name='newsfeed'),
     url(r'^create_post', views.create_post, name='create_post'),
+    url(r'^remove_post', views.remove_post, name='remove_post'),
 ]
