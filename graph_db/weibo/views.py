@@ -15,41 +15,60 @@ except:
 
 
 # My uid: 3023515021
-
 gc =  GstoreConnector.GstoreConnector(gStore_conf['host'], gStore_conf['port'])
 
 
-def comment_post(response):
-    pass
+# select *
+# { 
+#   <2053092304>    <foaf:knows>    ?user2
+# ?user2 <foaf:knows>    ?user3
+# ?user3 <foaf:knows>    ?user4
+# ?user4 <foaf:knows>    ?user5
+# } 
 
-
-def share_post(response):
-    pass
-
-
-def like_post(response):
-    pass
 
 
 # 搜索用户
-def search_user(response):
+def search(request):
 
-    # 从链接或者cookie中获取uid
-    query = request.GET.get('q')
+    if request.method == 'GET':
 
-    sparql = """SELECT ?uid ?screen_name
-                WHERE {{ 
-                    ?uid <foaf:name> \"{q}\" .
-                    ?uid <foaf:screen_name> ?screen_name .
-                }}""".format(q=q)
+        # 从链接或者cookie中获取uid
+        query = request.GET.get('q')
+        uid = request.COOKIES.get("uid")
 
-    users = normalize_list(query_graph(sparql))
+        sparql = """SELECT *
+                    WHERE {{ 
+                        ?uid <foaf:name> ?name . 
+                        ?uid <foaf:screen_name> ?screen_name .
+                        ?uid <foaf:name> ?name .
+                        ?uid <foaf:location> ?location .
+                        FILTER regex(?name, \"{query}\") .
 
-    return render(request, 'weibo/newsfeed.html', {'users': users})
+                    }}""".format(query=query, uid=uid)
+
+        users = normalize_list(query_graph(sparql))
+
+
+        sparql = """SELECT *
+                    WHERE {{ 
+                        <uid> <foaf:knows> ?uid2 . 
+                        ?uid2 <foaf:knows> ?uid3 .
+                        ?uid3 <foaf:knows> ?uid4 .
+                        ?uid4 <foaf:knows> ?uid5 .
+                    }}""".format(uid=uid)
+
+        suggested_users = normalize_list(query_graph(sparql))
+
+
+
+        return render(request, 'weibo/search.html', {'users': users})
+
+    return render(request, 'weibo/search.html')
 
 
 # 加好友
-def addfriend(response):
+def add_friend(request):
 
     if request.method == 'POST':
 
@@ -70,7 +89,7 @@ def addfriend(response):
 
 
 # 删除好友
-def unfriend(response):
+def unfriend(request):
 
     if request.method == 'POST':
 
@@ -121,6 +140,7 @@ def create_post(request):
             form["repostsnum"] = 0
             form["commentsnum"] = 0
             form["attitudesnum"] = 0
+            
         sparql = """INSERT DATA {{
                         <{uid}> <foaf:posted> <{mid}> . 
                         <{mid}> <rdf:type> <wb:Post> .
@@ -183,6 +203,11 @@ def newsfeed(request):
     post_dict['uid'] = uid
     post_dict['properties'] = ['date', 'text', 'source', 'repostsnum', 'commentsnum', 'attitudesnum', 'topic']
     post_dict['conditions'] = ' . '.join([ '?mid <wb:{}> ?{}'.format(p, p)  for p in post_dict['properties'] ]) + ' . '
+
+
+
+
+
     sparql = """SELECT *
                 WHERE {{ 
                     {{
@@ -411,10 +436,24 @@ def query_graph(sparql):
         result = gc.query(gStore_conf['username'], gStore_conf['password'], gStore_conf['db'], sparql)
         result = json.loads(result)
 
-    print(result)
-    return result['results']['bindings'] if 'results' in result else result
+    if result.get('StatusCode', '')=='403':
+        return result
+    else:
+        return result['results']['bindings'] if 'results' in result else result
 
 
 # 辅助功能2：从sparql语句返回的字典中获取value值
 def normalize_list(items):
     return [{k: v['value'] for k, v in item.items()} for item in items]
+
+
+def comment_post(response):
+    pass
+
+
+def share_post(response):
+    pass
+
+
+def like_post(response):
+    pass

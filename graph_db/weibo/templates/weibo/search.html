@@ -32,7 +32,7 @@
 								<span class="icon-bar"></span>
 								<span class="icon-bar"></span>
 							  </button>
-							  <a href="/weibo/user" class="navbar-brand logo">b</a>
+							  <a href="http://usebootstrap.com/theme/facebook" class="navbar-brand logo">b</a>
 							</div>
 							<nav class="collapse navbar-collapse" role="navigation">
 							<form class="navbar-form navbar-left" action="/weibo/search" method="GET">
@@ -70,58 +70,27 @@
 								<!-- content -->                      
 								<div class="row">
 								  
-								 <!-- main col left --> 
-								 <div class="col-sm-5">
-								   
-									  <div class="panel panel-default">
-										<div class="panel-thumbnail"><img src="{% static "assets/img/weibo" %}" class="img-responsive"></div>
-										<div class="panel-body">
-											<p class="lead">{{ my_profile.name }}</p>
-											<p>{{ my_profile.followersnum  }} Followers, {{ my_profile.statusesnum }} Posts</p>
-										  
-										  <p>
-											<img src="{% static "assets/img/uFp_tsTJboUY7kue5XAsGAs28.png" %}" height="28px" width="28px">
-										  </p>
-										</div>
-									  </div>
-
-								  </div>
 								  
 								  <!-- main col right -->
 								  <div class="col-sm-7">
 									   
-									{% for post in my_posts %}
+									{% for user in users %}
 									<div class="panel panel-default" id="{{ post.mid  }}">
 										<div class="panel-heading">
-											<b class="pull-left">@{{ my_profile.screen_name }}</b>
-											<span >{{ post.date }}</span> 
-											<div class="col-sm-1 dropdown ">
-												<a data-toggle="dropdown" href="#">x</a>
-												<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-													<li><a href="#" onclick="delete_post({{ post.mid }});">delete post</a></li>
-												</ul>
-											</div>
+											<b>@{{ user.screen_name }}</b>
 										</div>
 										
 
 										<div class="panel-body container">
-										
-											<div class="col-sm-5">
-												<a href="#">#{{ post.topic }}</a> {{ post.text }} 
-											</div>
+											<span>{{ user.name }}</span>
+											<span>{{ user.location }}</span>
 									
 										</div>
 
 										<div class="panel-footer">
-											<span >Like: {{ post.attitudesnum }}</span> 
-											<span >Comment: {{ post.commentsnum }}</span> 
-											<span >Share: {{ post.repostsnum }}</span> 
-											<hr>
-
 											<div>
-												<a href="#" onclick="like_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Like</button></a>
-												<a href="#" onclick="comment_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Comment</button></a>
-												<a href="#" onclick="share_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Share</button></a>												
+												<a href="#" onclick="add_friend({{ user.uid }});"><button type="button" class="btn btn-primary btn-sm">Add Friend</button></a>
+												<a href="#" onclick="unfriend({{ user.uid }});"><button type="button" class="btn btn-primary btn-sm">Unfriend</button></a>
 											</div>
 
 											
@@ -186,58 +155,58 @@
 			});
         });
 
-		function delete_post(mid) {
-			$.ajax({
-				type:"post",
-				url:"/weibo/remove_post",
-				data: { mid: mid },
-				dataType: "text",
-				success:function(data) {
-					alert(data);
-					location.reload();
-				}
-			});
+function delete_post(mid) {
+	$.ajax({
+		type:"post",
+		url:"/weibo/remove_post",
+		data: { mid: mid },
+		dataType: "text",
+		success:function(data) {
+			alert(data);
+			location.reload();
 		}
+	});
+}
 
-		function comment_post(mid) {
-			$.ajax({
-				type:"post",
-				url:"/weibo/comment_post",
-				data: { mid: mid },
-				dataType: "text",
-				success:function(data) {
-					alert(data);
-					location.reload();
-				}
-			});
+function comment_post(mid) {
+	$.ajax({
+		type:"post",
+		url:"/weibo/comment_post",
+		data: { mid: mid },
+		dataType: "text",
+		success:function(data) {
+			alert(data);
+			location.reload();
 		}
+	});
+}
 
 
-		function share_post(mid) {
-			$.ajax({
-				type:"post",
-				url:"/weibo/share_post",
-				data: { mid: mid },
-				dataType: "text",
-				success:function(data) {
-					alert(data);
-					location.reload();
-				}
-			});
+function share_post(mid) {
+	$.ajax({
+		type:"post",
+		url:"/weibo/share_post",
+		data: { mid: mid },
+		dataType: "text",
+		success:function(data) {
+			alert(data);
+			location.reload();
 		}
+	});
+}
 
-		function like_post(mid) {
-			$.ajax({
-				type:"post",
-				url:"/weibo/like_post",
-				data: { mid: mid },
-				dataType: "text",
-				success:function(data) {
-					alert(data);
-					location.reload();
-				}
-			});
+function like_post(mid) {
+	$.ajax({
+		type:"post",
+		url:"/weibo/like_post",
+		data: { mid: mid },
+		dataType: "text",
+		success:function(data) {
+			alert(data);
+			location.reload();
 		}
+	});
+}
 
         </script>
 </body></html>
