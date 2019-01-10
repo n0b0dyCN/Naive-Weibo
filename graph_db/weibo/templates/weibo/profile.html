@@ -2,8 +2,6 @@
 <html lang="en">
 	<head>
 		{% load static %}
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
-        <meta charset="utf-8">
         <title>Weibo</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
         <link href="{% static "assets/css/bootstrap.css" %}" rel="stylesheet">
@@ -11,6 +9,7 @@
           <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
         <link href="{% static "assets/css/facebook.css" %}" rel="stylesheet">
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     </head>
     
     <body>
@@ -80,7 +79,13 @@
 											<p>{{ my_profile.followersnum  }} Followers, {{ my_profile.statusesnum }} Posts</p>
 										  
 										  <p>
-											<img src="{% static "assets/img/uFp_tsTJboUY7kue5XAsGAs28.png" %}" height="28px" width="28px">
+										    {% if not is_me %}
+											  {% if is_friend %}
+												<a href="#" onclick="unfollow({{ my_profile.uid }});"><button type="button" class="btn btn-primary btn-sm">Unfollow</button></a>
+											  {% else %}
+												<a href="#" onclick="follow({{ my_profile.uid }});"><button type="button" class="btn btn-primary btn-sm">Follow</button></a>
+											  {% endif %}
+											{% endif %}
 										  </p>
 										</div>
 									  </div>
@@ -231,6 +236,33 @@
 				type:"post",
 				url:"/weibo/like_post",
 				data: { mid: mid },
+				dataType: "text",
+				success:function(data) {
+					alert(data);
+					location.reload();
+				}
+			});
+		}
+
+
+		function follow(uid) {
+			$.ajax({
+				type:"post",
+				url:"/weibo/add_friend",
+				data: { tuid: uid },
+				dataType: "text",
+				success:function(data) {
+					alert(data);
+					location.reload();
+				}
+			});
+		}
+
+		function unfollow(uid) {
+			$.ajax({
+				type:"post",
+				url:"/weibo/unfriend",
+				data: { tuid: uid },
 				dataType: "text",
 				success:function(data) {
 					alert(data);

@@ -68,6 +68,7 @@ def search(request):
 
 
 # 加好友
+@csrf_exempt
 def add_friend(request):
 
     if request.method == 'POST':
@@ -79,16 +80,18 @@ def add_friend(request):
 
         sparql = """INSERT DATA {{
                         <{uid}> <foaf:knows> <{tuid}> . 
-                    }}""".format(**form)
+                    }}""".format(uid=request.COOKIES.get("uid"), tuid=form["tuid"])
 
         save = query_graph(sparql)
 
         # 如果用户信息成功存到数据库，则跳转到用户页面，将uid和screen_name存到cookie中
-        if save['StatusCode']=='402':
-            pass
+        if save['StatusCode']==402:
+            return HttpResponse("Followed.")
+
 
 
 # 删除好友
+@csrf_exempt
 def unfriend(request):
 
     if request.method == 'POST':
@@ -100,13 +103,10 @@ def unfriend(request):
 
         sparql = """DELETE DATA {{
                         <{uid}> <foaf:knows> <{tuid}> .
-                    }}""".format(**form)
-        done = query_graph(sparql)
-        if done:
-            return True
-
-    return False
-    
+                    }}""".format(uid=request.COOKIES.get("uid"), tuid=form["tuid"])
+        save = query_graph(sparql)
+        if save['StatusCode']==402:
+            return HttpResponse("Unfollowed.")
 
 # 创建帖子
 def create_post(request):
@@ -141,6 +141,8 @@ def create_post(request):
             form["commentsnum"] = 0
             form["attitudesnum"] = 0
             
+        #form["text"] = form["text"].encode('unicode-escape').decode('utf8').replace('\\n', '\n')
+        #form["topic"] = form["topic"].encode('unicode-escape').decode('utf8').replace('\\n', '\n')
         sparql = """INSERT DATA {{
                         <{uid}> <foaf:posted> <{mid}> . 
                         <{mid}> <rdf:type> <wb:Post> .
@@ -154,10 +156,28 @@ def create_post(request):
                     }}""".format(**form)
 
         save = query_graph(sparql)
-
         # 如果用户信息成功存到数据库，则跳转到用户页面，将uid和screen_name存到cookie中
-        if save['StatusCode']=='402':
+        print("Create Post")
+        print(save)
+        if save['StatusCode']==402:
+            sparql = """ SELECT (COUNT(DISTINCT ?mid) AS ?count)
+            WHERE {{ <{uid}> <foaf:posted> ?mid . }}""".format(uid=uid)
+            result = normalize_list(query_graph(sparql))[0]
+            print(result)
+            nr_posts = int(result["count"])
+            print(nr_posts)
+            sparql = """ DELETE DATA {{
+                        <{uid}> <foaf:statusesnum> \"{nr_posts}\"
+            }}""".format(nr_posts=nr_posts-1, uid=uid)
+            query_graph(sparql)
+            sparql = """ INSERT DATA {{
+                        <{uid}> <foaf:statusesnum> \"{nr_posts}\"
+            }}""".format(nr_posts=nr_posts, uid=uid)
+            query_graph(sparql)
             return HttpResponseRedirect('/weibo/user?uid={uid}'.format(uid=form['uid']))
+        else:
+            print("Unsuccess insert")
+            print(save)
 
     return HttpResponseRedirect('/weibo/user?uid={uid}'.format(uid=form['uid']))
 
@@ -173,14 +193,34 @@ def remove_post(request):
         form.update(request.POST)
         form = {k:v[0] for k, v in form.items()}
         form["uid"] = request.COOKIES.get("uid")
+        uid = form["uid"]
         print(form)
 
         sparql = """DELETE DATA {{
                         <{uid}> <foaf:posted> <{mid}> .
                         <{mid}> <wb:shared> ?tmid .
                     }}""".format(**form)
+        print("Delete post")
+        print(sparql)
         done = query_graph(sparql)
         if done:
+            sparql = """ SELECT (COUNT(DISTINCT ?mid) AS ?count)
+            WHERE {{ <{uid}> <foaf:posted> ?mid . }}""".format(uid=uid)
+            try:
+                result = normalize_list(query_graph(sparql))[0]
+                print(result)
+                nr_posts = int(result["count"])
+            except:
+                nr_posts = 0
+            print(nr_posts)
+            sparql = """ DELETE DATA {{
+                        <{uid}> <foaf:statusesnum> \"{nr_posts}\"
+            }}""".format(nr_posts=nr_posts+1, uid=uid)
+            query_graph(sparql)
+            sparql = """ INSERT DATA {{
+                        <{uid}> <foaf:statusesnum> \"{nr_posts}\"
+            }}""".format(nr_posts=nr_posts, uid=uid)
+            query_graph(sparql)
             return HttpResponse("Successfully deleted.")
 
     return HttpResponse("Failed to delete.")
@@ -204,22 +244,20 @@ def newsfeed(request):
     post_dict['properties'] = ['date', 'text', 'source', 'repostsnum', 'commentsnum', 'attitudesnum', 'topic']
     post_dict['conditions'] = ' . '.join([ '?mid <wb:{}> ?{}'.format(p, p)  for p in post_dict['properties'] ]) + ' . '
 
-
-
-
-
     sparql = """SELECT *
                 WHERE {{ 
                     {{
-                        <{uid}> <foaf:knows> ?uid
+                        <{uid}> <foaf:knows> ?uid .
                         ?uid <foaf:posted> ?mid . 
+                        ?uid <foaf:screen_name> ?screen_name .
                         ?mid <rdf:type> <wb:Post> .
                         OPTIONAL {{ 
                             {conditions} 
                         }}
                     }} UNION {{ 
-                        <{uid}> <foaf:knows> ?uid
+                        <{uid}> <foaf:knows> ?uid .
                         ?uid <foaf:posted> ?tmid . 
+                        ?uid <foaf:screen_name> ?screen_name .
                         ?mid <wb:shared> ?tmid .
                         ?mid <rdf:type> <wb:Post> .
                         OPTIONAL {{ 
@@ -227,12 +265,14 @@ def newsfeed(request):
                         }}
                     }} UNION {{
                         <{uid}> <foaf:posted> ?mid . 
+                        <{uid}> <foaf:screen_name> ?screen_name .
                         ?mid <rdf:type> <wb:Post> .
                         OPTIONAL {{ 
                             {conditions} 
                         }}
                     }} UNION {{ 
                         <{uid}> <foaf:posted> ?tmid . 
+                        <{uid}> <foaf:screen_name> ?screen_name .
                         ?mid <wb:shared> ?tmid .
                         ?mid <rdf:type> <wb:Post> .
                         OPTIONAL {{ 
@@ -240,7 +280,6 @@ def newsfeed(request):
                         }}
                     }}
                 }} LIMIT 10""".format(**post_dict)
-    print(sparql)
     posts = normalize_list(query_graph(sparql))
 
     return render(request, 'weibo/newsfeed.html', {'posts': posts})
@@ -249,9 +288,13 @@ def newsfeed(request):
 def profile(request):
 
     # 从链接或者cookie中获取uid
+    is_me = False
     uid = request.GET.get('uid')
     if not uid and request.COOKIES.get('uid'):
         uid = request.COOKIES.get('uid')
+        is_me = True
+    elif uid == request.COOKIES.get('uid'):
+        is_me = True
 
     # 如果链接或者cookie中没有uid，则跳转到登录页面 
     if not uid:
@@ -268,9 +311,16 @@ def profile(request):
                       <{uid}> <rdf:type> <foaf:Person> .
                       OPTIONAL {{ {conditions} }}
                 }}""".format(**user_dict)
-    print(sparql)
     my_profile = normalize_list(query_graph(sparql))[0]
-    print(my_profile["name"])
+    my_profile["uid"] = uid
+
+
+    try:
+        sparql = """SELECT * WHERE {{ <{me}> <foaf:knows> <{uid}>  }}""".format(me=request.COOKIES.get('uid'), uid=uid)
+        result = normalize_list(query_graph(sparql))[0]
+        is_friend = True
+    except:
+        is_friend = False
 
     # 获取用户发布的帖子，存到my_posts字典中
     post_dict = dict()
@@ -310,11 +360,8 @@ def profile(request):
                 }} LIMIT 6""".format(**friend_dict)
     my_friends = normalize_list(query_graph(sparql))
 
-    print("My profile")
-    print(my_profile)
-    print("My friends")
-    print(my_friends)
-    return render(request, 'weibo/profile.html', {'my_profile': my_profile, 'my_posts': my_posts, 'my_friends': my_friends})
+    return render(request, 'weibo/profile.html',
+                  {'my_profile': my_profile, 'my_posts': my_posts, 'my_friends': my_friends, "is_me": is_me, "is_friend":is_friend})
 
 # 注册
 def register(request):
@@ -332,7 +379,7 @@ def register(request):
                         ?uid <foaf:screen_name> \"{screen_name}\" . 
                     }}""".format(**form)
 
-                # 如果输入的用户名已被其他用户注册，则返回注册页
+        # 如果输入的用户名已被其他用户注册，则返回注册页
         if query_graph(sparql):
             return render(request, 'weibo/registration.html', {'error': 'User already exist'})
 
@@ -367,7 +414,7 @@ def register(request):
         save = query_graph(sparql)
 
         # 如果用户信息成功存到数据库，则跳转到用户页面，将uid和screen_name存到cookie中
-        if save['StatusCode']=='402':
+        if save['StatusCode']==402:
             response = HttpResponseRedirect('/weibo/user?uid={uid}'.format(uid=form['uid']))
             response.set_cookie('uid', form['uid'])         
             response.set_cookie('screen_name', form['screen_name'])
