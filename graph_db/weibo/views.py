@@ -27,6 +27,23 @@ gc =  GstoreConnector.GstoreConnector(gStore_conf['host'], gStore_conf['port'])
 # } 
 
 
+def me(request):
+    uid = request.COOKIES.get("uid")
+
+    sparql = """SELECT ?tuid ?screen_name
+                WHERE {{
+                    ?tuid <foaf:knows> <{uid}> .
+                    ?tuid <foaf:screen_name> ?screen_name .
+                }}""".format(uid=uid)
+    followers = normalize_list(query_graph(sparql))
+
+    sparql = """SELECT ?tuid ?screen_name
+                WHERE {{
+                    <{uid}> <foaf:knows> ?tuid .
+                    ?tuid <foaf:screen_name> ?screen_name .
+                }}""".format(uid=uid)
+    following = normalize_list(query_graph(sparql))
+    return render(request, 'weibo/me.html', {'followers': followers, 'following': following})
 
 # 搜索用户
 def search(request):

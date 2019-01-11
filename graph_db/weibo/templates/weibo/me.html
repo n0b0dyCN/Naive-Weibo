@@ -21,81 +21,35 @@
 				  
 					<!-- main right col -->
 					<div class="column col-sm-10 col-xs-11 col-sm-offset-1" id="main">
-					    {% include "weibo/nav.html" %}
+						{% include "weibo/nav.html" %}
 						<div class="padding">
 							<div class="full col-sm-9">
 							  
 								<!-- content -->                      
 								<div class="row">
-								  
-								 <!-- main col left --> 
-								 <div class="col-sm-5">
-								   
-									  <div class="panel panel-default">
-										<div class="panel-thumbnail"><img src="{% static "assets/img/weibo" %}" class="img-responsive"></div>
-										<div class="panel-body">
-											<p class="lead">{{ my_profile.name }}</p>
-											<p>{{ my_profile.followersnum  }} Followers, {{ my_profile.statusesnum }} Posts</p>
-										  
-										  <p>
-										    {% if not is_me %}
-											  {% if is_friend %}
-												<a href="#" onclick="unfollow({{ my_profile.uid }});"><button type="button" class="btn btn-primary btn-sm">Unfollow</button></a>
-											  {% else %}
-												<a href="#" onclick="follow({{ my_profile.uid }});"><button type="button" class="btn btn-primary btn-sm">Follow</button></a>
-											  {% endif %}
-											{% endif %}
-										  </p>
+									<ul id="meTab" class="nav nav-tabs">
+										<li class="active"><a href="#following" data-toggle="tab">Following</a></li>
+										<li><a href="#followers" data-toggle="tab">Followers</a></li>
+										<li><a href="#relations" data-toggle="tab">Relations</a></li>
+									</ul>
+									<div id="meTabContent" class="tab-content">
+										<div class="tab-pane fade in active" id="following">
+											<ul class="list-group">
+												{% for u in following %}
+												<li class="list-group-item"><a href=/weibo/user?uid={{ u.tuid }}>{{ u.screen_name }}</a></li>
+												{% endfor %}
+											</ul>
 										</div>
-									  </div>
-
-								  </div>
-								  
-								  <!-- main col right -->
-								  <div class="col-sm-7">
-									   
-									{% for post in my_posts %}
-									<div class="panel panel-default" id="{{ post.mid  }}">
-										<div class="panel-heading">
-											<b class="pull-left">@{{ my_profile.screen_name }}</b>
-											<span >{{ post.date }}</span> 
-											<div class="col-sm-1 dropdown ">
-												<a data-toggle="dropdown" href="#">x</a>
-												<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-													<li><a href="#" onclick="delete_post({{ post.mid }});">delete post</a></li>
-												</ul>
-											</div>
+										<div class="tab-pane fade" id="followers">
+											<ul class="list-group">
+												{% for u in following %}
+												<li class="list-group-item"><a href=/weibo/user?uid={{ u.tuid }}>{{ u.screen_name }}</a></li>
+												{% endfor %}
+											</ul>
 										</div>
-										
-
-										<div class="panel-body container">
-										
-											<div class="col-sm-5">
-												<a href="#">#{{ post.topic }}</a> {{ post.text }} 
-											</div>
-									
-										</div>
-
-										<div class="panel-footer">
-											<span >Like: {{ post.attitudesnum }}</span> 
-											<span >Comment: {{ post.commentsnum }}</span> 
-											<span >Share: {{ post.repostsnum }}</span> 
-											<hr>
-
-											<div>
-												<a href="#" onclick="like_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Like</button></a>
-												<a href="#" onclick="comment_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Comment</button></a>
-												<a href="#" onclick="share_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Share</button></a>												
-											</div>
-
-											
-										</div>
-
-									 </div>
-									 {% endfor %}
-
-								  </div>
-							   </div><!--/row-->
+										<div class="tab-pane fade" id="relations">relations</div>
+									</div>
+								</div><!--/row-->
 							  
 							</div><!-- /col-9 -->
 						</div><!-- /padding -->
@@ -128,7 +82,7 @@
 			  </div>
 			  <div class="modal-footer">
 				<div>
-    			  <button class="btn btn-primary btn-sm" onclick="event.preventDefault();document.getElementById('post_form').submit();" >Post</button>
+				  <button class="btn btn-primary btn-sm" onclick="event.preventDefault();document.getElementById('post_form').submit();" >Post</button>
 				  <button class="btn btn-primary btn-sm" data-dismiss="modal" aria-hidden="true">Close</button>
 				</div>	
 			  </div>
@@ -231,4 +185,6 @@
 		}
 
         </script>
+		<script>
+		</script>
 </body></html>
