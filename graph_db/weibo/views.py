@@ -26,6 +26,15 @@ gc =  GstoreConnector.GstoreConnector(gStore_conf['host'], gStore_conf['port'])
 # ?user4 <foaf:knows>    ?user5
 # } 
 
+def jrelation(request):
+    sparql = """
+    SELECT ?person WHERE {{
+        {{ ?person <foaf:knows> <{uid}> }}
+    UNION {{ ?person <foaf:knows> ?u1 . ?u1 }}
+    }}
+    """
+    j = ""
+    return HttpResponse(j, content_type="application/json")
 
 def me(request):
     uid = request.COOKIES.get("uid")
