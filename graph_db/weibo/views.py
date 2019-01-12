@@ -27,14 +27,57 @@ gc =  GstoreConnector.GstoreConnector(gStore_conf['host'], gStore_conf['port'])
 # } 
 
 def jrelation(request):
-    sparql = """
-    SELECT ?person WHERE {{
-        {{ ?person <foaf:knows> <{uid}> }}
-    UNION {{ ?person <foaf:knows> ?u1 . ?u1 }}
-    }}
-    """
-    j = ""
-    return HttpResponse(j, content_type="application/json")
+    # 2773208055
+    # uid = 2773208055
+    nodes = {}
+    links = set()
+    tuid = request.GET.get("tuid", "")
+    if tuid == "":
+        return HttpResponse("")
+    tuid = int(tuid)
+    uid = int(request.COOKIES.get("uid"))
+    print("jrelation called", uid)
+    for i in range(1,4):
+        sparql = "SELECT * WHERE { <%d> " % (uid)
+        for j in range(1, i+1):
+            sparql += "<foaf:knows> ?u{j} . \n ?u{j} <foaf:screen_name> ?u{j}_name . ?u{j} ".format(j=j)
+        sparql += "<foaf:knows> <%d>}" % (tuid)
+        print(sparql)
+        resp = normalize_list(query_graph(sparql))
+        for rel in resp:
+            # add nodes
+            for j in range(1, j+1):
+                nodes[rel["u%d"%(j)]] = rel["u%d_name"%(j)]
+            # add rel
+            links.add((
+                uid,
+                int(rel["u1"])
+            ))
+            links.add((
+                int(rel["u%d"%(i)]),
+                tuid
+            ))
+            for j in range(1, i):
+                links.add((
+                    int(rel["u%d" % (j)]),
+                    int(rel["u%d" % (j+1)])
+                ))
+    # get target screen_name
+    sparql = "SELECT ?name WHERE {{ <{tuid}> <foaf:screen_name> ?name }}".format(tuid=tuid)
+    t_name = normalize_list(query_graph(sparql))[0]["name"]
+    sparql = "SELECT ?name WHERE {{ <{uid}> <foaf:screen_name> ?name }}".format(uid=uid)
+    m_name = normalize_list(query_graph(sparql))[0]["name"]
+    graph = {"nodes":[], "links":[]}
+    graph["nodes"].append({"name": m_name, "label":"me", "id":uid})
+    graph["nodes"].append({"name": t_name, "label":"target", "id":tuid})
+    for k in nodes:
+        graph["nodes"].append({"name": nodes[k], "label":"", "id":k})
+    for l in links:
+        graph["links"].append({"source":l[0], "target":l[1], "type":"KNOWS"})
+    print(len(graph["nodes"]))
+    print(len(graph["links"]))
+    print(json.dumps(graph))
+    return HttpResponse(json.dumps(graph), content_type="application/json")
 
 def me(request):
     uid = request.COOKIES.get("uid")

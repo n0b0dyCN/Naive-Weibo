@@ -1,37 +1,39 @@
 // Draw user relations with d3.js
+	var colors = d3.scaleOrdinal(d3.schemeCategory10);
+	var svg = d3.select("svg"),
+		width = +svg.attr("width"),
+		height = +svg.attr("height"),
+		node,
+		link;
 
-var colors = d3.scaleOrdinal(d3.schemeCategory10);
-var svg = d3.select("svg"),
-	width = +svg.attr("width"),
-	height = +svg.attr("height"),
-	node,
-	link;
+	svg.append("defs").append("marker")
+		.attrs({
+			'id': 'arrowhead',
+			'viewBox': '-0 -5 10 10',
+			'refX': 13,
+			'refY': 0,
+			'orient': 'auto',
+			'markerWidth': 13,
+			'markerHeight': 13,
+			'xoverflow': 'visible'
+		}).append('svg:path')
+		.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+		.attr('fill', '#999')
+		.style('stroke','none');
 
-svg.append("defs").append("marker")
-	.attrs({
-		'id': 'arrowhead',
-		'viewBox': '-0 -5 10 10',
-		'refX': 13,
-		'refY': 0,
-		'orient': 'auto',
-		'markerWidth': 13,
-		'markerHeight': 13,
-		'xoverflow': 'visible'
-	}).append('svg:path')
-	.attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-	.attr('fill', '#999')
-	.style('stroke','none');
+	var simulation = d3.forceSimulation()
+		.force("link", d3.forceLink().id(function (d) {return d.id;}).distance(100).strength(1))
+		.force("charge", d3.forceManyBody())
+		.force("center", d3.forceCenter(width / 2, height / 2));
 
-var simulation = d3.forceSimulation()
-	.force("link", d3.forceLink().id(function (d) {return d.id;}).distance(100).strength(1))
-	.force("charge", d3.forceManyBody())
-	.force("center", d3.forceCenter(width / 2, height / 2));
 
-d3.json("/weibo/jrelation", function (error, graph) {
-	        if (error) throw error;
-	        update(graph.links, graph.nodes);
-	    
-});
+function load_relation() {
+
+	d3.json("/weibo/jrelation?tuid="+$("#tuid").val(), function (error, graph) {
+				if (error) throw error;
+				update(graph.links, graph.nodes);
+	});
+}
 
 function update(links, nodes) {
     link = svg.selectAll(".link")
@@ -80,6 +82,7 @@ function update(links, nodes) {
         .enter()
         .append("g")
         .attr("class", "node")
+		.on("dblclick", function(d){ window.location="/weibo/user?uid=" + d.id; })
         .call(d3.drag()
                 .on("start", dragstarted)
                 .on("drag", dragged)
