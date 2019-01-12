@@ -47,7 +47,8 @@ def jrelation(request):
         for rel in resp:
             # add nodes
             for j in range(1, j+1):
-                nodes[rel["u%d"%(j)]] = rel["u%d_name"%(j)]
+                node_id = int(rel["u%d"%(j)])
+                nodes[node_id] = rel["u%d_name"%(j)]
             # add rel
             links.add((
                 uid,
@@ -71,9 +72,11 @@ def jrelation(request):
     graph["nodes"].append({"name": m_name, "label":"me", "id":uid})
     graph["nodes"].append({"name": t_name, "label":"target", "id":tuid})
     for k in nodes:
+        if k == uid or k == tuid:
+            continue
         graph["nodes"].append({"name": nodes[k], "label":"", "id":k})
     for l in links:
-        graph["links"].append({"source":l[0], "target":l[1], "type":"KNOWS"})
+        graph["links"].append({"source":l[0], "target":l[1], "type":"FOLLOWS"})
     print(len(graph["nodes"]))
     print(len(graph["links"]))
     print(json.dumps(graph))
