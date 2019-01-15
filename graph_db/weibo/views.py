@@ -140,7 +140,8 @@ def follow(request):
                     }}""".format(uid=request.COOKIES.get("uid"), tuid=form["tuid"])
         save = query_graph(sparql)
 
-        if save['StatusCode']==402:
+        # if save['StatusCode']==402:
+        if save['StatusCode']=='402':
             return HttpResponse("Followed.")
 
 
@@ -158,7 +159,8 @@ def unfollow(request):
                     }}""".format(uid=request.COOKIES.get("uid"), tuid=form["tuid"])
         save = query_graph(sparql)
 
-        if save['StatusCode']==402:
+        # if save['StatusCode']==402:
+        if save['StatusCode']=='402':
             return HttpResponse("Unfollowed.")
 
 
@@ -201,7 +203,7 @@ def create_post(request):
         # 如果用户信息成功存到数据库，则跳转到用户页面，将uid和screen_name存到cookie中
         print("Create Post")
         print(save)
-        if save['StatusCode']==402:
+        if save['StatusCode']=='402':
             sparql = """ SELECT (COUNT(DISTINCT ?mid) AS ?count)
             WHERE {{ <{uid}> <foaf:posted> ?mid . }}""".format(uid=uid)
             result = normalize_list(query_graph(sparql))[0]
@@ -463,7 +465,7 @@ def register(request):
         save = query_graph(sparql)
 
         # 如果用户信息成功存到数据库，则跳转到用户页面，将uid和screen_name存到cookie中
-        if save['StatusCode']==402:
+        if save['StatusCode']=='402':
             response = HttpResponseRedirect('/weibo/user?uid={uid}'.format(uid=form['uid']))
             response.set_cookie('uid', form['uid'])         
             response.set_cookie('screen_name', form['screen_name'])
