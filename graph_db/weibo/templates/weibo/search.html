@@ -23,46 +23,8 @@
 					<!-- main right col -->
 					<div class="column col-sm-10 col-xs-11 col-sm-offset-1" id="main">
 						
-						<!-- top nav -->
-						<div class="navbar navbar-blue navbar-static-top">  
-							<div class="navbar-header">
-							  <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
-								<span class="sr-only">Toggle</span>
-								<span class="icon-bar"></span>
-								<span class="icon-bar"></span>
-								<span class="icon-bar"></span>
-							  </button>
-							  <a href="http://usebootstrap.com/theme/facebook" class="navbar-brand logo">b</a>
-							</div>
-							<nav class="collapse navbar-collapse" role="navigation">
-							<form class="navbar-form navbar-left" action="/weibo/search" method="GET">
-								<div class="input-group input-group-sm" style="max-width:360px;">
-								  <input class="form-control" placeholder="Search" name="q" id="srch-term" type="text">
-								  <div class="input-group-btn">
-									<button class="btn btn-default"><i class="glyphicon glyphicon-search"></i></button>
-								  </div>
-								</div>
-							</form>
-							<ul class="nav navbar-nav">
-							  <li>
-								<a href="#"><i class="glyphicon glyphicon-home"></i> Home</a>
-							  </li>
-							  <li>
-								<a href="#postModal" role="button" data-toggle="modal"><i class="glyphicon glyphicon-plus"></i> Post</a>
-							  </li>
-							</ul>
-							<ul class="nav navbar-nav navbar-right">
-							  <li class="dropdown">
-								<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-user"></i></a>
-								<ul class="dropdown-menu">
-								  <li><a href="/weibo/logout">Logout</a></li>
-								  <li><a href="">More</a></li>
-								</ul>
-							  </li>
-							</ul>
-							</nav>
-						</div>
-						<!-- /top nav -->
+						{% include "weibo/nav.html" %}
+					
 					  
 						<div class="padding">
 							<div class="full col-sm-9">
@@ -75,9 +37,9 @@
 								  <div class="col-sm-7">
 									   
 									{% for user in users %}
-									<div class="panel panel-default" id="{{ post.mid  }}">
+									<div class="panel panel-default" id="{{ user.uid }}">
 										<div class="panel-heading">
-											<b>@{{ user.screen_name }}</b>
+											<a href="/weibo/user?uid={{ user.uid }}"><b>@{{ user.screen_name }}</b></a>
 										</div>
 										
 
@@ -89,8 +51,9 @@
 
 										<div class="panel-footer">
 											<div>
-												<a href="#" onclick="add_friend({{ user.uid }});"><button type="button" class="btn btn-primary btn-sm">Add Friend</button></a>
-												<a href="#" onclick="unfriend({{ user.uid }});"><button type="button" class="btn btn-primary btn-sm">Unfriend</button></a>
+												<a class="follow-state" href="#" onclick="change_follow(this,{{ user.uid }});">
+													<button type="button" class="btn btn-primary btn-sm">{% if user.me %}Unfollow{% else %}Follow{% endif %}</button>
+												</a>
 											</div>
 
 											
@@ -155,58 +118,24 @@
 			});
         });
 
-function delete_post(mid) {
-	$.ajax({
-		type:"post",
-		url:"/weibo/remove_post",
-		data: { mid: mid },
-		dataType: "text",
-		success:function(data) {
-			alert(data);
-			location.reload();
+		function change_follow(obj, tuid) {
+			var curr_state = $(obj).children("button").text().toLowerCase();
+			$.ajax({
+				type:"post",
+				url:"/weibo/" + curr_state,
+				data: { tuid: tuid },
+				dataType: "text",
+				success:function(data) {
+					// location.reload();
+					alert(data);
+					if (curr_state=='follow'){
+						$(obj).children("button").text("Unfollow");
+					}else{
+						$(obj).children("button").text("Follow");
+					}
+				}
+			});
 		}
-	});
-}
-
-function comment_post(mid) {
-	$.ajax({
-		type:"post",
-		url:"/weibo/comment_post",
-		data: { mid: mid },
-		dataType: "text",
-		success:function(data) {
-			alert(data);
-			location.reload();
-		}
-	});
-}
-
-
-function share_post(mid) {
-	$.ajax({
-		type:"post",
-		url:"/weibo/share_post",
-		data: { mid: mid },
-		dataType: "text",
-		success:function(data) {
-			alert(data);
-			location.reload();
-		}
-	});
-}
-
-function like_post(mid) {
-	$.ajax({
-		type:"post",
-		url:"/weibo/like_post",
-		data: { mid: mid },
-		dataType: "text",
-		success:function(data) {
-			alert(data);
-			location.reload();
-		}
-	});
-}
 
         </script>
 </body></html>

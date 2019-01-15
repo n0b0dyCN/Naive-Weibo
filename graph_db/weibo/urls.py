@@ -14,8 +14,8 @@ urlpatterns = [
     url(r'^share_post', views.share_post, name='share_post'),        
     url(r'^like_post', views.like_post, name='like_post'),        
     url(r'^search', views.search, name='search'),        
-    url(r'^add_friend', views.add_friend, name='add_friend'),        
-    url(r'^unfriend', views.unfriend, name='unfriend'),        
+    url(r'^follow', views.follow, name='follow'),        
+    url(r'^unfollow', views.unfollow, name='unfollow'),        
     url(r'^me', views.me, name='me'),        
     url(r'^jrelation', views.jrelation, name='jrelation'),        
 ]
