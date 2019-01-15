@@ -1,9 +1,9 @@
-path = '/home/odmaa/Desktop/Graph_DB_mining_2018_Fall/hw_big/graph_db/weibo/'
+path = '/home/n0b0dy/Naive-Weibo/graph_db/weibo/'
 
 mysql_conf = dict()
 mysql_conf['host'] = 'localhost'
 mysql_conf['username'] = 'root'
-mysql_conf['password'] = '123'
+mysql_conf['password'] = 'root'
 mysql_conf['db'] = 'graph_db'
 
 gStore_conf = dict()

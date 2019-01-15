@@ -25,7 +25,7 @@ SECRET_KEY = 'dmw&@%60)8295)8yb=wo(6gf8g4t#+)=hh7%4jn!w_uk=b)u8*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["0.0.0.0", "192.168.21.130"]
 
 
 # Application definition
@@ -85,7 +85,7 @@ DATABASES = {
        'ENGINE': 'django.db.backends.mysql',
        'NAME': 'graph_db',
        'USER': 'root',
-       'PASSWORD': '123',
+       'PASSWORD': 'root',
        'HOST': '127.0.0.1',
        'PORT': '3306'
     }    
