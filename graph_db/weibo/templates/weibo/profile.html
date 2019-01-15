@@ -39,11 +39,15 @@
 										  
 										  <p>
 										    {% if not is_me %}
-											  {% if is_friend %}
+												<a class="follow-state" href="#" onclick="change_follow(this,{{ my_profile.uid }});">
+													<button type="button" class="btn btn-primary btn-sm">{% if is_friend %}Unfollow{% else %}Follow{% endif %}</button>
+												</a>
+
+<!-- 											  {% if is_friend %}
 												<a href="#" onclick="unfollow({{ my_profile.uid }});"><button type="button" class="btn btn-primary btn-sm">Unfollow</button></a>
 											  {% else %}
 												<a href="#" onclick="follow({{ my_profile.uid }});"><button type="button" class="btn btn-primary btn-sm">Follow</button></a>
-											  {% endif %}
+											  {% endif %} -->
 											{% endif %}
 										  </p>
 										</div>
@@ -70,9 +74,34 @@
 
 										<div class="panel-body container">
 										
-											<div class="col-sm-5">
-												<a href="#">#{{ post.topic }}</a> {{ post.text }} 
+											<div class="row">
+												<div class="col-sm-6">
+													<p><a href="#">#{{ post.topic }}</a>{{ post.text }}</p>
+												</div>
 											</div>
+											<hr>
+
+											{% if post.source_text %}
+
+											<div class="panel-heading w-25">
+												<b class="pull-left">@{{ post.source_screen_name }}</b>
+												<span >{{ post.source_date }}</span> 
+											</div>
+
+											<div class="panel-body container">
+											
+												<div class="row">
+													<div class="col-sm-6">
+														<p><a href="#">#{{ post.source_topic }}</a>{{ post.source_text }}</p>
+													</div>
+												</div>
+											</div>
+
+											<span >Like: {{ post.source_attitudesnum }}</span> 
+											<span >Comment: {{ post.source_commentsnum }}</span> 
+											<span >Share: {{ post.source_repostsnum }}</span> 
+
+											{% endif %}
 									
 										</div>
 
@@ -80,13 +109,13 @@
 											<span >Like: {{ post.attitudesnum }}</span> 
 											<span >Comment: {{ post.commentsnum }}</span> 
 											<span >Share: {{ post.repostsnum }}</span> 
-											<hr>
+											<!-- <hr> -->
 
-											<div>
+<!-- 											<div>
 												<a href="#" onclick="like_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Like</button></a>
 												<a href="#" onclick="comment_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Comment</button></a>
 												<a href="#" onclick="share_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Share</button></a>												
-											</div>
+											</div> -->
 
 											
 										</div>
@@ -203,32 +232,50 @@
 			});
 		}
 
-
-		function follow(uid) {
+		function change_follow(obj, tuid) {
+			var curr_state = $(obj).children("button").text().toLowerCase();
 			$.ajax({
 				type:"post",
-				url:"/weibo/add_friend",
-				data: { tuid: uid },
+				url:"/weibo/" + curr_state,
+				data: { tuid: tuid },
 				dataType: "text",
 				success:function(data) {
+					// location.reload();
 					alert(data);
-					location.reload();
+					if (curr_state=='follow'){
+						$(obj).children("button").text("Unfollow");
+					}else{
+						$(obj).children("button").text("Follow");
+					}
 				}
 			});
 		}
 
-		function unfollow(uid) {
-			$.ajax({
-				type:"post",
-				url:"/weibo/unfriend",
-				data: { tuid: uid },
-				dataType: "text",
-				success:function(data) {
-					alert(data);
-					location.reload();
-				}
-			});
-		}
+		// function follow(uid) {
+		// 	$.ajax({
+		// 		type:"post",
+		// 		url:"/weibo/add_friend",
+		// 		data: { tuid: uid },
+		// 		dataType: "text",
+		// 		success:function(data) {
+		// 			alert(data);
+		// 			location.reload();
+		// 		}
+		// 	});
+		// }
+
+		// function unfollow(uid) {
+		// 	$.ajax({
+		// 		type:"post",
+		// 		url:"/weibo/unfriend",
+		// 		data: { tuid: uid },
+		// 		dataType: "text",
+		// 		success:function(data) {
+		// 			alert(data);
+		// 			location.reload();
+		// 		}
+		// 	});
+		// }
 
         </script>
 </body></html>
