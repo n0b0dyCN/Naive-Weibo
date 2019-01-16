@@ -109,3 +109,6 @@ weibo.nt
 
 # Added by n0b0dy
 *.swp
+
+# Added by Odmaa
+settings.py

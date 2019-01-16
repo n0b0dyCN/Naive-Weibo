@@ -140,7 +140,6 @@ def follow(request):
                     }}""".format(uid=request.COOKIES.get("uid"), tuid=form["tuid"])
         save = query_graph(sparql)
 
-        # if save['StatusCode']==402:
         if save['StatusCode']=='402':
             return HttpResponse("Followed.")
 
@@ -159,7 +158,6 @@ def unfollow(request):
                     }}""".format(uid=request.COOKIES.get("uid"), tuid=form["tuid"])
         save = query_graph(sparql)
 
-        # if save['StatusCode']==402:
         if save['StatusCode']=='402':
             return HttpResponse("Unfollowed.")
 
