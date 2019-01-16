@@ -20,7 +20,13 @@
 		</form>
 		<ul class="nav navbar-nav">
 		  <li>
-			<a href="/weibo/user"><i class="glyphicon glyphicon-home"></i> Home</a>
+			<a href="/weibo/newsfeed"><i class="glyphicon glyphicon-home"></i> Home</a>
+		  </li>
+		  <li>
+			<a href="/weibo/user" role="button" data-toggle="modal"><i class="glyphicon glyphicon-user"></i> My Profile</a>
+		  </li>
+		  <li>
+			<a href="/weibo/me" role="button" data-toggle="modal"><i class="glyphicon glyphicon-star"></i> My Friends</a>
 		  </li>
 		  <li>
 			<a href="#postModal" role="button" data-toggle="modal"><i class="glyphicon glyphicon-plus"></i> Post</a>
@@ -30,8 +36,9 @@
 		  <li class="dropdown">
 			<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-user"></i></a>
 			<ul class="dropdown-menu">
-			  <li><a href="/weibo/me">Me</a></li>
 			  <li><a href="/weibo/newsfeed">Newsfeed</a></li>
+			  <li><a href="/weibo/user">My Profile</a></li>
+			  <li><a href="/weibo/me">My Friends</a></li>
 			  <li><a href="/weibo/logout">Logout</a></li>
 			</ul>
 		  </li>

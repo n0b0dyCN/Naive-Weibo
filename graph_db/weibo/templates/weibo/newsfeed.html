@@ -54,6 +54,67 @@
 									{% for post in posts %}
 									<div class="panel panel-default" id="{{ post.mid  }}">
 										<div class="panel-heading">
+
+											<a href="/weibo/user?uid={{ user.uid }}"><b class="pull-left">@{{ post.screen_name }}</b></a>	　　
+											<span >{{ post.date }}</span> 
+		
+										</div>
+										
+
+										<div class="panel-body container">
+										
+											<div class="row">
+												<div class="col-sm-6">
+													<p><a href="#">#{{ post.topic }}</a>{{ post.text }}</p>
+												</div>
+											</div>
+											<hr>
+
+											{% if post.source_text %}
+
+											<div class="panel-heading w-25">
+												<b class="pull-left">@{{ post.source_screen_name }}</b>
+												<span >{{ post.source_date }}</span> 
+											</div>
+
+											<div class="panel-body container">
+											
+												<div class="row">
+													<div class="col-sm-6">
+														<p><a href="#">#{{ post.source_topic }}</a>{{ post.source_text }}</p>
+													</div>
+												</div>
+											</div>
+
+											<span >Like: {{ post.source_attitudesnum }}</span> 
+											<span >Comment: {{ post.source_commentsnum }}</span> 
+											<span >Share: {{ post.source_repostsnum }}</span> 
+
+											{% endif %}
+									
+										</div>
+
+										<div class="panel-footer">
+											<span >Like: {{ post.attitudesnum }}</span> 
+											<span >Comment: {{ post.commentsnum }}</span> 
+											<span >Share: {{ post.repostsnum }}</span> 
+											<!-- <hr> -->
+
+<!-- 											<div>
+												<a href="#" onclick="like_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Like</button></a>
+												<a href="#" onclick="comment_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Comment</button></a>
+												<a href="#" onclick="share_post({{ post.mid }});"><button type="button" class="btn btn-primary btn-sm">Share</button></a>												
+											</div> -->
+
+											
+										</div>
+
+									 </div>
+									 {% endfor %}
+
+									<!-- {% for post in posts %}
+									<div class="panel panel-default" id="{{ post.mid  }}">
+										<div class="panel-heading">
 											<b class="pull-left">@{{ post.screen_name }}</b>
 											<span >{{ post.date }}</span> 
 											<div class="col-sm-1 dropdown ">
@@ -86,7 +147,7 @@
 										</div>
 
 									 </div>
-									 {% endfor %}
+									 {% endfor %} -->
 
 								  </div>
 							   </div><!--/row-->

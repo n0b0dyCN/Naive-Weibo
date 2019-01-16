@@ -282,43 +282,30 @@ def newsfeed(request):
     post_dict['uid'] = uid
     post_dict['properties'] = ['date', 'text', 'source', 'repostsnum', 'commentsnum', 'attitudesnum', 'topic']
     post_dict['conditions'] = ' . '.join([ '?mid <wb:{}> ?{}'.format(p, p)  for p in post_dict['properties'] ]) + ' . '
+    post_dict['share_conditions'] = ' . '.join([ '?source_mid <wb:{}> ?source_{}'.format(p, p)  for p in post_dict['properties'] ]) + ' . '
 
     sparql = """SELECT *
                 WHERE {{ 
-                    {{
-                        <{uid}> <foaf:knows> ?uid .
+                        {{ 
+                            ?uid <foaf:posted> ?mid . FILTER ( ?uid = <{uid}> ) . 
+                        }} UNION {{ 
+                            <{uid}> <foaf:knows> ?uid . 
+                        }} 
+
                         ?uid <foaf:posted> ?mid . 
                         ?uid <foaf:screen_name> ?screen_name .
                         ?mid <rdf:type> <wb:Post> .
                         OPTIONAL {{ 
                             {conditions} 
                         }}
-                    }} UNION {{ 
-                        <{uid}> <foaf:knows> ?uid .
-                        ?uid <foaf:posted> ?tmid . 
-                        ?uid <foaf:screen_name> ?screen_name .
-                        ?mid <wb:shared> ?tmid .
-                        ?mid <rdf:type> <wb:Post> .
-                        OPTIONAL {{ 
-                            {conditions} 
+                        OPTIONAL {{
+                            ?mid <wb:shared> ?source_mid .
+                            ?source_uid <foaf:posted> ?source_mid .
+                            ?source_uid <foaf:screen_name> ?source_screen_name .
+                            {share_conditions}
                         }}
-                    }} UNION {{
-                        <{uid}> <foaf:posted> ?mid . 
-                        <{uid}> <foaf:screen_name> ?screen_name .
-                        ?mid <rdf:type> <wb:Post> .
-                        OPTIONAL {{ 
-                            {conditions} 
-                        }}
-                    }} UNION {{ 
-                        <{uid}> <foaf:posted> ?tmid . 
-                        <{uid}> <foaf:screen_name> ?screen_name .
-                        ?mid <wb:shared> ?tmid .
-                        ?mid <rdf:type> <wb:Post> .
-                        OPTIONAL {{ 
-                            {conditions} 
-                        }}
-                    }}
                 }} LIMIT 10""".format(**post_dict)
+
     posts = normalize_list(query_graph(sparql))
 
     return render(request, 'weibo/newsfeed.html', {'posts': posts})
@@ -383,24 +370,6 @@ def profile(request):
                         }}
                     }} 
                 }} LIMIT 10""".format(**post_dict)
-
-    # sparql = """SELECT *
-    #             WHERE {{ 
-    #                 {{
-    #                     <{uid}> <foaf:posted> ?mid . 
-    #                     ?mid <rdf:type> <wb:Post> .
-    #                     OPTIONAL {{ 
-    #                         {conditions} 
-    #                     }}
-    #                 }} UNION {{ 
-    #                     <{uid}> <foaf:posted> ?tmid . 
-    #                     ?mid <wb:shared> ?tmid .
-    #                     ?mid <rdf:type> <wb:Post> .
-    #                     OPTIONAL {{ 
-    #                         {conditions} 
-    #                     }}
-    #                 }}
-    #             }} LIMIT 10""".format(**post_dict)
 
     my_posts = normalize_list(query_graph(sparql))
 
