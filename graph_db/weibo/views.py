@@ -71,9 +71,6 @@ def jrelation(request):
         graph["nodes"].append({"name": nodes[k], "label":"", "id":k})
     for l in links:
         graph["links"].append({"source":l[0], "target":l[1], "type":"FOLLOWS"})
-    print(len(graph["nodes"]))
-    print(len(graph["links"]))
-    print(json.dumps(graph))
     return HttpResponse(json.dumps(graph), content_type="application/json")
 
 
@@ -120,6 +117,7 @@ def search(request):
                                 FILTER ( ?me = <{me}> ) . 
                             }}
                         }}""".format(query=query,me=me)
+            print (sparql)
             users = normalize_list(query_graph(sparql))
 
     return render(request, 'weibo/search.html', {'users': users})
@@ -348,6 +346,12 @@ def profile(request):
     except:
         is_friend = False
 
+    sparql = """SELECT (COUNT(DISTINCT ?f) as ?followers) WHERE {{ ?f <foaf:knows> <{uid}> . }}""".format(uid=uid)
+    try:
+        followers_cnt = int(normalize_list(query_graph(sparql))[0]["followers"])
+    except:
+        followers_cnt = 0
+
     # 获取用户发布的帖子，存到my_posts字典中
     post_dict = dict()
     post_dict['uid'] = uid
@@ -388,7 +392,8 @@ def profile(request):
     my_friends = normalize_list(query_graph(sparql))
 
     return render(request, 'weibo/profile.html',
-                  {'my_profile': my_profile, 'my_posts': my_posts, 'my_friends': my_friends, "is_me": is_me, "is_friend":is_friend})
+                  {'my_profile': my_profile, 'my_posts': my_posts, 'my_friends': my_friends,
+                   "is_me": is_me, "is_friend":is_friend, 'followers_cnt':followers_cnt})
 
 
 # 注册
@@ -502,7 +507,6 @@ def query_graph(sparql):
         result = gc.query(gStore_conf['username'], gStore_conf['password'], gStore_conf['db'], sparql)
         result = json.loads(result)
 
-    print(result)
 
     if result.get('StatusCode', '')=='403':
         return result

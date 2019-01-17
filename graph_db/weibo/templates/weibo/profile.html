@@ -35,7 +35,7 @@
 										<div class="panel-thumbnail"><img src="{% static "assets/img/weibo" %}" class="img-responsive"></div>
 										<div class="panel-body">
 											<p class="lead">{{ my_profile.name }}</p>
-											<p>{{ my_profile.followersnum  }} Followers, {{ my_profile.statusesnum }} Posts</p>
+											<p>{{ followers_cnt  }} Followers, {{ my_profile.statusesnum }} Posts</p>
 										  
 										  <p>
 										    {% if not is_me %}
