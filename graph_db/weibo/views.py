@@ -57,6 +57,13 @@ def jrelation(request):
                     int(rel["u%d" % (j)]),
                     int(rel["u%d" % (j+1)])
                 ))
+    # whether there is link between source and target?
+    sparql = """SELECT * WHERE {{ <{uid}> <foaf:knows> <{tuid}> }}""".format(uid=uid, tuid=tuid)
+    print (sparql)
+    resp = query_graph(sparql)
+    print(resp)
+    if len(resp) > 0:
+        links.add((int(uid), int(tuid)))
     # get target screen_name
     sparql = "SELECT ?name WHERE {{ <{tuid}> <foaf:screen_name> ?name }}".format(tuid=tuid)
     t_name = normalize_list(query_graph(sparql))[0]["name"]
